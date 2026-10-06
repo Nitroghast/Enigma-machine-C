@@ -44,7 +44,7 @@ int openFile (FILE** input, FILE** config, FILE** output, char *inputPath, char 
 int readRotorOrder (FILE* input, int *rotorOrder) {
     char rotors[3];
     int itemsRead = fscanf(input, "ROTORS:%*1[ ]%c%*1[ ]%c%*1[ ]%c", rotors, rotors + 1, rotors + 2);
-    if (itemsRead != 4 || !isEndOfLine(input, false)) {
+    if (itemsRead != 3 || !isEndOfLine(input, false)) {
         return ROTOR_INVALID_INPUT_TYPE;
     }
     for (size_t i = 0; i < 3; i++) {
@@ -80,7 +80,7 @@ int readRotorPositions (FILE* input, char *rotorPosition) {
 }
 
 int readRingSettings (FILE* input, char *ringSettings) {
-    int itemsRead = fscanf(input, "RING SETTINGS: %c %c %c\n", ringSettings, ringSettings + 1, ringSettings + 2);
+    int itemsRead = fscanf(input, "RING SETTINGS: %c %c %c", ringSettings, ringSettings + 1, ringSettings + 2);
     if (itemsRead != 3 || !isEndOfLine(input, false)) {
         return RING_INVALID_INPUT_TYPE;
     }
@@ -155,7 +155,7 @@ int readPlugboard(FILE *input, char swapPairs[][3], size_t *actualSwapCount) {
 
 int readReflector (FILE* input, char *reflectorType) {
     int itemsRead = fscanf(input, "REFLECTOR: %c\n", reflectorType);
-    if (itemsRead != 1 || isEndOfLine(input, true)) {
+    if (itemsRead != 1 || !isEndOfLine(input, true)) {
         return REFLECTOR_INVALID_INPUT_TYPE;
     }
     if (*reflectorType < 'A' || *reflectorType > 'C') {

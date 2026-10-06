@@ -12,7 +12,7 @@
 
 
 int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rotorOrder, char *rotorPosition, char *ringSettings, char swapPairs[][3], size_t *swapNumber, char *reflectorType);
-char encodeChar (enigmaMachine *machine, char plainText);
+char encodeChar(enigmaMachine *machine, char plainText);
 
 int main(int argc, char *argv[]) {
     
@@ -34,7 +34,14 @@ int main(int argc, char *argv[]) {
     char reflector;
 
     int returnValue = inputFunc(argv, &input, &config, &output, rotorOrder, rotorPosition, ringSettings, swapPairs, &swapAmount, &reflector);
-    if (returnValue) return 1;
+    if (returnValue == 2) {
+        return 1;
+    } else if (returnValue) {
+        fclose(input);
+        fclose(config);
+        fclose(output);
+        return 1;
+    }
 
     enigmaMachine machineState = {
         .rotors = {
@@ -44,6 +51,10 @@ int main(int argc, char *argv[]) {
         }
     };
 
+    for (size_t i = 0; i < 3; i++) {
+        machineState.rotors[i].ring = ringSettings[i] - 'A';
+        machineState.rotors[i].position = rotorPosition[i] - 'A';
+    }
     strcpy(machineState.reflector, reflectors[reflector - 'A']);
     memcpy(machineState.plugboard, swapPairs, sizeof(swapPairs));
 
@@ -53,9 +64,7 @@ int main(int argc, char *argv[]) {
             fprintf(output, " ");
             counter = 0;
         }
-        if (plainText == ' ' || plainText == '\n') {
-            continue;
-        }
+        if (!isalpha((unsigned char) plainText)) continue;
         fprintf(output, "%c", encodeChar(&machineState, toupper(plainText)));
         counter++;
     }
@@ -70,7 +79,7 @@ int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rot
     int readResult = openFile(input, config, output, argv[1], argv[2], argv[3]);
     if (readResult){
         handleFileError(readResult, *input, *config);
-        return 1;
+        return 2;
     }
 
     //Rotor settings

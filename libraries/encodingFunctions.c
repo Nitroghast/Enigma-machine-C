@@ -5,7 +5,6 @@ void stepRotors(enigmaMachine *machine) {
     Rotor *middle = &machine->rotors[1];
     Rotor *right = &machine->rotors[2];
 
-    int left_notch = left->notch - 'A';
     int middle_notch = middle->notch - 'A';
     int right_notch = right->notch - 'A';
 

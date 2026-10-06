@@ -1,7 +1,7 @@
 #pragma once
 #include "utilityStructs.h"
 
-Rotor rotors[5] = {
+static const Rotor rotors[5] = {
     // Rotor I
     {
         .forward = "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
