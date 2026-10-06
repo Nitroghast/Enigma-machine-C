@@ -10,6 +10,9 @@
 #include "rotors.h"
 #include "reflectors.h"
 
+#define LETTERS_PER_WORD 4
+#define WORDS_PER_LINE 10
+
 
 int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rotorOrder, char *rotorPosition, char *ringSettings, char swapPairs[][3], size_t *swapNumber, char *reflectorType);
 char encodeChar(enigmaMachine *machine, char plainText);
@@ -59,14 +62,20 @@ int main(int argc, char *argv[]) {
     memcpy(machineState.plugboard, swapPairs, sizeof(swapPairs));
 
     char plainText;
-    for (size_t counter = 0; fscanf(input, "%c", &plainText) != EOF;) {
-        if (counter == 4) {
-            fprintf(output, " ");
-            counter = 0;
-        }
+    for (size_t wordCounter = 0, lineCounter = 0; fscanf(input, "%c", &plainText) != EOF;) {
         if (!isalpha((unsigned char) plainText)) continue;
+        if (wordCounter == LETTERS_PER_WORD) {
+            lineCounter++;
+            if (lineCounter == WORDS_PER_LINE) {
+                fprintf(output, "\n");
+                lineCounter = 0;
+            }else {
+                fprintf(output, " ");
+            }
+            wordCounter = 0;
+        }
         fprintf(output, "%c", encodeChar(&machineState, toupper(plainText)));
-        counter++;
+        wordCounter++;
     }
 
 fclose(input);
