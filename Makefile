@@ -1,20 +1,21 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -Iheaders
+CC      = gcc
+CFLAGS  = -Wall -Wextra -Iheaders -MMD -MP
+TARGET  = enigma
+OBJS    = main.o libraries/errorFunctions.o libraries/inputFunctions.o libraries/encodingFunctions.o
 
-enigma.exe: main.o libraries/errorFunctions.o libraries/inputFunctions.o libraries/encodingFunctions.o
-	$(CC) main.o libraries/errorFunctions.o libraries/inputFunctions.o libraries/encodingFunctions.o -o enigma.exe
+ifeq ($(OS),Windows_NT)
+    TARGET := $(TARGET).exe
+endif
 
-main.o: main.c headers/errorTypes.h headers/errorFunctions.h headers/inputFunctions.h headers/encodingFunctions.h headers/utilityStructs.h
-	$(CC) $(CFLAGS) -c main.c
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET)
 
-libraries/errorFunctions.o: libraries/errorFunctions.c headers/errorFunctions.h headers/errorTypes.h
-	$(CC) $(CFLAGS) -c libraries/errorFunctions.c -o libraries/errorFunctions.o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-libraries/inputFunctions.o: libraries/inputFunctions.c headers/inputFunctions.h headers/errorTypes.h
-	$(CC) $(CFLAGS) -c libraries/inputFunctions.c -o libraries/inputFunctions.o
-
-libraries/encodingFunctions.o: libraries/encodingFunctions.c headers/encodingFunctions.h headers/rotors.h headers/reflectors.h headers/utilityStructs.h
-	$(CC) $(CFLAGS) -c libraries/encodingFunctions.c -o libraries/encodingFunctions.o
+-include $(OBJS:.o=.d)
 
 clean:
-	Remove-Item -Force -ErrorAction SilentlyContinue *.o, libraries/*.o, enigma.exe
+	rm -f $(OBJS) $(OBJS:.o=.d) $(TARGET)
+
+.PHONY: clean

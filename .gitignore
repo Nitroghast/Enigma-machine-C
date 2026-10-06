@@ -2,4 +2,7 @@
 *.d
 enigma
 enigma.exe
+input.txt
+config.txt
 output.txt
+decrypted.txt
