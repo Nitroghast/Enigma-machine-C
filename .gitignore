@@ -1,0 +1,5 @@
+*.o
+*.d
+enigma
+enigma.exe
+output.txt
