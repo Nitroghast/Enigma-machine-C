@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "errorFunctions.h"
+#include <ctype.h>
 #include "errorTypes.h"
+#include "errorFunctions.h"
 #include "inputFunctions.h"
+#include "encodingFunctions.h"
+#include "utilityStructs.h"
+#include "rotors.h"
+#include "reflectors.h"
 
 
 int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rotorOrder, char *rotorPosition, char *ringSettings, char swapPairs[][3], size_t *swapNumber, char *reflectorType);
+char encodeChar (enigmaMachine *machine, char plainText);
 
 int main(int argc, char *argv[]) {
     
@@ -23,23 +29,37 @@ int main(int argc, char *argv[]) {
     int rotorOrder[3];
     char rotorPosition[3];
     char ringSettings[3];
-    char swapPairs[13][3];
+    char swapPairs[13][3] = {'\0'};
     size_t swapAmount = 0;
     char reflector;
 
     int returnValue = inputFunc(argv, &input, &config, &output, rotorOrder, rotorPosition, ringSettings, swapPairs, &swapAmount, &reflector);
     if (returnValue) return 1;
 
-    /*
-    int test = 0;
-    printf("Test sui rotori [0/1]? ");
-    scanf("%d", &test); 
-    if (test) {
-        for (size_t i = 0; i < 3; i++) {
-            fprintf(output, "%d ", rotorOrder[i]);
+    enigmaMachine machineState = {
+        .rotors = {
+            rotors[rotorOrder[0]],
+            rotors[rotorOrder[1]],
+            rotors[rotorOrder[2]]
         }
+    };
+
+    strcpy(machineState.reflector, reflectors[reflector - 'A']);
+    memcpy(machineState.plugboard, swapPairs, sizeof(swapPairs));
+
+    char plainText;
+    for (size_t counter = 0; fscanf(input, "%c", &plainText) != EOF;) {
+        if (counter == 4) {
+            fprintf(output, " ");
+            counter = 0;
+        }
+        if (plainText == ' ' || plainText == '\n') {
+            continue;
+        }
+        fprintf(output, "%c", encodeChar(&machineState, toupper(plainText)));
+        counter++;
     }
-    */
+
 fclose(input);
 fclose(config);
 fclose(output);
@@ -91,4 +111,24 @@ int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rot
     }
 
     return 0;
+}
+
+char encodeChar(enigmaMachine *machine, char plainText) {
+    stepRotors(machine);
+
+    char current = applyPlugboard(machine, plainText);
+
+    current = rotorFwd(&machine->rotors[2], current); // Right Rotor
+    current = rotorFwd(&machine->rotors[1], current); // Middle Rotor
+    current = rotorFwd(&machine->rotors[0], current); // Left Rotor
+
+    current = reflectorTransform(machine, current);
+
+    current = rotorRev(&machine->rotors[0], current); // Left Rotor
+    current = rotorRev(&machine->rotors[1], current); // Middle Rotor
+    current = rotorRev(&machine->rotors[2], current); // Right Rotor
+
+    current = applyPlugboard(machine, current);
+
+    return current;
 }

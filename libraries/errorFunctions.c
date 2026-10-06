@@ -35,7 +35,8 @@ void handleRotorError (int readResult) {
         case ROTOR_INVALID_INPUT_TYPE:
             fprintf(stderr, "Format for the rotors should be\n"
             "\"ROTORS: <number> <number> <number>\", with the numbers being arabic numerals\n"
-            "with no spaces at the end, only the newline.\n");
+            "with no spaces at the end, only the newline, and everywhere there is a space,\n"
+            "only one has to be input-ed (e.g \"ROTORS:1  2    4\" is not valid, but \"ROTORS: 1 2 4\" is).\n");
             break;
         case ROTOR_NUMBER_OUT_OF_RANGE:
             fprintf(stderr, "Rotor values must be between 1 and 5 (both inclusive).\n");
@@ -54,7 +55,8 @@ void handlePositionError(int readResult) {
         case POSITION_INVALID_INPUT_TYPE:
             fprintf(stderr, "Format for the rotor initial positions should be\n"
             "\"ROTOR POSITIONS: <letter> <letter> <letter>\",\n"
-            "with no spaces at the end, only the newline.\n");
+            "with no spaces at the end, only the newline, and everywhere there is a space,\n"
+            "only one has to be input-ed (e.g \"ROTOR POSITIONS:A  X    Q\" is not valid, but \"ROTOR POSITIONS: A X Q\" is).\n");
             break;
         case POSITION_INVALID_CHAR:
             fprintf(stderr, "Only valid input is letters of the English alphabet (A-Z).\n");
@@ -70,7 +72,8 @@ void handleRingError (int readResult) {
         case RING_INVALID_INPUT_TYPE:
             fprintf(stderr, "Format for the ring positions should be\n"
             "\"RING SETTINGS: <letter> <letter> <letter>\",\n"
-            "with no spaces at the end, only the newline.\n");
+            "with no spaces at the end, only the newline, and everywhere there is a space,\n"
+            "only one has to be input-ed (e.g \"RING SETTINGS:A  X    Q\" is not valid, but \"ROTORS: A X Q\" is).\n");
             break;
         case RING_INVALID_CHAR:
             fprintf(stderr, "Only valid input is letters of the English alphabet (A-Z).\n");
@@ -86,7 +89,10 @@ void handlePlugboardError (int readResult) {
         case PLUGBOARD_INVALID_INPUT_TYPE:
             fprintf(stderr, "Format for the plugboard should be\n"
             "\"PLUGBOARD: <letter pairs separated by spaces>\",\n"
-            "with no spaces at the end, only the newline.\n");
+            "with no spaces at the end, only the newline, and after the colon\n"
+            "there has to be exactly one space, but there is no such requirement\n"
+            "for between two letter pairs\n"
+            "(e.g. \"PLUGBOARD:AB\" is invalid; \"PLUGBOARD: AB\" is valid; \"PLUGBOARD: AB       CD\" is valid).\n");
             break;
         case PLUGBOARD_INVALID_PAIRING:
             fprintf(stderr, "Letters must be in groups of 2 separated by spaces, there is at least one letter group of length != 2.\n");

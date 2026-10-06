@@ -8,6 +8,26 @@ that corresponds to 0 if everything goes correctly, so that if(returnValue) can 
 used in the main to check if the function didn't work correctly).
 */
 
+static bool isEndOfLine(FILE *input, bool eofIsValid) {
+    char character = 0;
+    int returnValue = fscanf(input, "%c", &character);
+
+    if (returnValue == EOF) {
+        return eofIsValid;
+    }
+    if (character == '\n') {
+        return true;
+    }
+    if (character == '\r') {
+        returnValue = fscanf(input, "%c", &character);
+        if (returnValue == EOF) {
+            return eofIsValid;
+        }
+        return character == '\n';
+    }
+    return false;
+}
+
 int openFile (FILE** input, FILE** config, FILE** output, char *inputPath, char *configPath, char *outputPath) {
     if ((*input = fopen(inputPath, "r")) == NULL) {
         return INPUT_ERROR;
@@ -22,17 +42,16 @@ int openFile (FILE** input, FILE** config, FILE** output, char *inputPath, char 
 }
 
 int readRotorOrder (FILE* input, int *rotorOrder) {
-    char lastChar;
     char rotors[3];
-    int itemsRead = fscanf(input, "ROTORS:%*1[ ]%c%*1[ ]%c%*1[ ]%c%c", rotors[0], rotors[1], rotors[2], &lastChar);
-    if (itemsRead != 3) {
+    int itemsRead = fscanf(input, "ROTORS:%*1[ ]%c%*1[ ]%c%*1[ ]%c", rotors, rotors + 1, rotors + 2);
+    if (itemsRead != 4 || !isEndOfLine(input, false)) {
         return ROTOR_INVALID_INPUT_TYPE;
     }
     for (size_t i = 0; i < 3; i++) {
         if (rotors[i] - '0' < 1 || rotors[i] - '0' > 5) {
             return ROTOR_NUMBER_OUT_OF_RANGE;
         } else {
-            rotorOrder[i] = rotors[i] - '0';
+            rotorOrder[i] = rotors[i] - '1';
         }
     }
     if (rotorOrder[0] == rotorOrder[1] || 
@@ -44,9 +63,8 @@ int readRotorOrder (FILE* input, int *rotorOrder) {
 }
 
 int readRotorPositions (FILE* input, char *rotorPosition) {
-    char lastChar;
-    int itemsRead = fscanf(input, "ROTOR POSITIONS:%*1[ ]%c%*1[ ]%c%*1[ ]%c%c", rotorPosition, rotorPosition + 1, rotorPosition + 2, &lastChar);
-    if (itemsRead != 3) {
+    int itemsRead = fscanf(input, "ROTOR POSITIONS:%*1[ ]%c%*1[ ]%c%*1[ ]%c", rotorPosition, rotorPosition + 1, rotorPosition + 2);
+    if (itemsRead != 3 || !isEndOfLine(input, false)) {
         return POSITION_INVALID_INPUT_TYPE;
     }
     for (size_t i = 0; i < 3; i++){
@@ -63,7 +81,7 @@ int readRotorPositions (FILE* input, char *rotorPosition) {
 
 int readRingSettings (FILE* input, char *ringSettings) {
     int itemsRead = fscanf(input, "RING SETTINGS: %c %c %c\n", ringSettings, ringSettings + 1, ringSettings + 2);
-    if (itemsRead != 3) {
+    if (itemsRead != 3 || !isEndOfLine(input, false)) {
         return RING_INVALID_INPUT_TYPE;
     }
     for (size_t i = 0; i < 3; i++) {
@@ -88,20 +106,14 @@ int readPlugboard(FILE *input, char swapPairs[][3], size_t *actualSwapCount) {
     }
 
     int readAmount = fscanf(input, "%*1[ ]%255[^\r\n]", plugboardPairs);
-    char EoL = 0;
-    fscanf(input, "%c", &EoL);
-    if (EoL == '\r') {
-        fscanf(input, "%*1[\n]");
-        EoL = '\n';
-    }
-    if (EoL != '\n') {
+    if (!isEndOfLine(input, false)) {
         return PLUGBOARD_INVALID_INPUT_TYPE;
     }
     if (readAmount != 1) {
         *actualSwapCount = 0;
-        return NO_PLUGBOARD_ERROR;
+        return NO_PLUGBOARD_ERROR; 
     }
-    if (plugboardPairs[strlen(plugboardPairs) - 1] == ' ') {
+    if (strlen(plugboardPairs) > 0 && plugboardPairs[strlen(plugboardPairs) - 1] == ' ') {
         return PLUGBOARD_INVALID_INPUT_TYPE;
     }
 
@@ -143,7 +155,7 @@ int readPlugboard(FILE *input, char swapPairs[][3], size_t *actualSwapCount) {
 
 int readReflector (FILE* input, char *reflectorType) {
     int itemsRead = fscanf(input, "REFLECTOR: %c\n", reflectorType);
-    if (itemsRead != 1) {
+    if (itemsRead != 1 || isEndOfLine(input, true)) {
         return REFLECTOR_INVALID_INPUT_TYPE;
     }
     if (*reflectorType < 'A' || *reflectorType > 'C') {
