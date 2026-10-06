@@ -9,6 +9,17 @@
 #include "utilityStructs.h"
 #include "rotors.h"
 #include "reflectors.h"
+#include <stdlib.h>
+
+#ifdef _WIN32
+    #define RESOLVE(path, buf) _fullpath((buf), (path), sizeof(buf))
+    #define PATHCMP _stricmp
+#else
+    #include <limits.h>
+    #define RESOLVE(path, buf) realpath((path), (buf))
+    #define PATHCMP strcmp
+#endif
+
 
 #define LETTERS_PER_WORD 4
 #define WORDS_PER_LINE 10
@@ -16,14 +27,20 @@
 
 int inputFunc(char *argv[], FILE** input, FILE** config, FILE** output, int *rotorOrder, char *rotorPosition, char *ringSettings, char swapPairs[][3], size_t *swapNumber, char *reflectorType);
 char encodeChar(enigmaMachine *machine, char plainText);
+static bool samePath(const char *a, const char *b);
 
 int main(int argc, char *argv[]) {
-    
+
     if (argc != 4) {
         fprintf(stderr, "Format: path/to/the/file.exe path/to/input.txt path/to/configuration.txt path/to/output.txt\n");
         return 1;
     }
-    
+
+    if (samePath(argv[1], argv[3]) || samePath(argv[2], argv[3])) {
+    fprintf(stderr, "Output file must be different from the input and config files.\n");
+    return 1;
+    }
+
     //File handling
     FILE* input = NULL;
     FILE* config = NULL;
@@ -149,4 +166,11 @@ char encodeChar(enigmaMachine *machine, char plainText) {
     current = applyPlugboard(machine, current);
 
     return current;
+}
+
+static bool samePath(const char *a, const char *b) {
+    char ra[4096], rb[4096];
+    if (PATHCMP(a, b) == 0) return true;
+    if (!RESOLVE(a, ra) || !RESOLVE(b, rb)) return false;
+    return PATHCMP(ra, rb) == 0;
 }
