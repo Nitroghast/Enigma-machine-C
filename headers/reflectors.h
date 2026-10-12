@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Alfredo Maria Luigi Sammartino (Nitroghast)
+// SPDX-License-Identifier: MPL-2.0
+
 #pragma once
 
 static const char ukw_a[27] = "EJMZALYXVBWFCRQUONTSPIKHGD";

@@ -1,6 +1,8 @@
+// Copyright (c) 2026 Alfredo Maria Luigi Sammartino (Nitroghast)
+// SPDX-License-Identifier: MPL-2.0
+
 #pragma once
 /*
-
 This file contains the definitions of all the error codes
 (including NO_ERROR, defined as 0 in every case).
 */

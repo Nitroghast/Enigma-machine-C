@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Alfredo Maria Luigi Sammartino (Nitroghast)
+# SPDX-License-Identifier: MPL-2.0
+
 from random import randint, shuffle, choices, sample
 import string
 
