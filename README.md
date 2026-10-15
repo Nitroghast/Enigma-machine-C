@@ -84,18 +84,63 @@ REFLECTOR: A
 
 Formatting is strict: one space after each colon, one space between items, and no trailing spaces. The program prints an explanation if a line is invalid.
 
+## Settings generator
+
+`enigma_gen.c` generates a random but reproducible set of machine settings from a numeric seed. The same seed always produces the same settings, on any platform.
+
+### Build
+
+```
+gcc -std=c99 -o enigma_gen enigma_gen.c
+```
+
+### Usage
+
+```
+./enigma_gen <seed>
+```
+
+On Windows: `./enigma_gen.exe <seed>`
+
+- **seed**: a non-negative integer (up to 64 bits).
+
+The settings are written to `enigma_settings_<seed>.txt` in the current directory, in the same format as the config file described above. An existing file with the same name is overwritten. You can pass the result straight to the simulator:
+
+```
+./enigma_gen 42
+./enigma input.txt enigma_settings_42.txt output.txt
+```
+
+### What gets generated
+
+| Setting           | How it is chosen                                          |
+| ----------------- | --------------------------------------------------------- |
+| `ROTORS`          | Three different rotors from I to V, in random order       |
+| `ROTOR POSITIONS` | A random letter for each rotor                            |
+| `RING SETTINGS`   | A random letter for each rotor                            |
+| `PLUGBOARD`       | `plugboardSwaps` pairs, with each letter used at most once |
+| `REFLECTOR`       | One of A, B or C                                          |
+
+The number of plugboard pairs is set by the `plugboardSwaps` constant at the top of `enigma_gen.c` (currently 10, maximum 13).
+
+### How it stays deterministic
+
+The generator uses its own small pseudo-random generator (SplitMix64) instead of `rand()`, whose output differs between compilers and operating systems. Bounded values are drawn with rejection sampling to avoid modulo bias.
+
+This is not cryptographically secure, so don't use it to generate real keys.
+
 ## Project layout
 
 ```
-main.c               program entry point and encoding loop
-headers/             header files (rotor and reflector wiring, structs, error codes)
-libraries/           config parsing, error messages, rotor and plugboard logic
-Makefile             build instructions
-input.txt            sample input
-config.txt           sample configuration
-output.txt           output obtained by running sample input with sample config thru
-decrypted.txt        output obtained by running output.txt with sample config thru
-settingsGenerator.py generates random settings
+main.c                     program entry point and encoding loop
+headers/                   header files (rotor and reflector wiring, structs, error codes)
+libraries/                 config parsing, error messages, rotor and plugboard logic
+Makefile                   build instructions
+input.txt                  sample input
+config.txt                 sample configuration
+output.txt                 output obtained by running sample input with sample config thru
+decrypted.txt              output obtained by running output.txt with sample config thru
+enigmaSettingsGenerator.c  generates deterministically random settings based on input seed
 ```
 
 ## Testing
@@ -113,3 +158,4 @@ Enigma encrypts and decrypts with the same settings, so a quick check is a round
 
 - This is a hobby and learning project. It is not suitable for real cryptography.
 - Wiring tables are the standard Enigma I rotors I to V and reflectors UKW-A, B and C.
+- The settings generator (`enigma_gen.c`) was initially drafted with Claude (Anthropic), then reviewed and modified by me.
