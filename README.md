@@ -86,7 +86,7 @@ Formatting is strict: one space after each colon, one space between items, and n
 
 ## Settings generator
 
-`enigma_gen.c` generates a random but reproducible set of machine settings from a numeric seed. The same seed always produces the same settings, on any platform.
+`enigmaSettingsGenerator.c` generates a random but reproducible set of machine settings from a numeric seed. The same seed always produces the same settings, on any platform.
 
 ### Build
 
